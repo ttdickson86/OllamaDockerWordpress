@@ -1,48 +1,54 @@
-version: '3'
 services:
-  db:
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=yourpassword
-      - MYSQL_DATABASE=wordpress
-    ports:
-      - "33060:3306"
-
   wordpress:
     image: wordpress:latest
-    links:
-      - db
-    volumes:
-      - wordpress_data:/var/www/html
+    ports:
+      - "80:80"
     environment:
       - WORDPRESS_DB_HOST=db
-      - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=root
-      - WORDPRESS_DB_PASSWORD=yourpassword
-    ports:
-      - "80:80"
-    restart: always
+      - WORDPRESS_DB_PASSWORD=your_password
+      - WORDPRESS_DB_NAME=wordpress
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - wordpress_network
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - nginx_data:/var/www/html
-    links:
-      - wordpress
+  db:
+    image: mariadb:latest
     environment:
-      - NGINX_MAIL_FROM=example@example.com
-      - NGINX_MAIL_HOST=smtp.example.com
-      - NGINX_MAIL_PORT=587
-      - NGINX_MAIL_SECURE=465
-      - NGINX_MAIL_MAILER=smtp
-      - NGINX_MAIL_USERNAME=yourname
-      - NGINX_MAIL_PASSWORD=yourpassword
+      - MYSQL_ROOT_PASSWORD=your_password
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=your_password
+    ports:
+      - "3306:3306"
+    networks:
+      - wordpress_network
 
-volumes:
-  db_data:
-  wordpress_data:
-  nginx_data:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=your_password
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - wordpress_network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - wordpress_network
+
+networks:
+  wordpress_network:
+    driver: bridge

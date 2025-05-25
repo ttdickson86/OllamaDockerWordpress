@@ -1,148 +1,77 @@
-# OllamaDockerWordpress
-Ntosah77 Open Source Apps
 
-To enhance your WordPress Docker setup with **SSL, caching, and custom domains**, I'll provide a **fully updated Docker Compose YAML** that includes these features.
+Here's a Docker Compose YAML file that sets up a WordPress site with integrated PHPMyAdmin and Redis. This configuration includes:
 
----
-
-### 🔐 **SSL Configuration (Let's Encrypt)**
-- Uses the `nginx-letsencrypt` image to handle Let's Encrypt certificates.
-- Enables HTTPS and configures Nginx to use the certificate.
-
----
-
-### 📦 **Caching**
-- Uses the `nginx-cache` image for caching.
-- Includes a custom cache configuration in Nginx.
-
----
-
-### 📡 **Custom Domains**
-- Configures Nginx to handle a custom domain (e.g., `example.com`).
-- Requires DNS settings to point to your server's IP.
-
----
-
-### ✅ **Updated Docker Compose YAML**
+- **WordPress** with a database and Redis caching
+- **MariaDB** as the database backend
+- **PHPMyAdmin** for database management
+- **Redis** for caching
 
 ```yaml
-version: '3'
 services:
-  db:
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=yourpassword
-      - MYSQL_DATABASE=wordpress
-    ports:
-      - "33060:3306"
-
   wordpress:
     image: wordpress:latest
-    links:
-      - db
-    volumes:
-      - wordpress_data:/var/www/html
+    ports:
+      - "80:80"
     environment:
       - WORDPRESS_DB_HOST=db
-      - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=root
-      - WORDPRESS_DB_PASSWORD=yourpassword
-      - WORDPRESS_HOME=/var/www/html
-    ports:
-      - "80:80"
-    restart: always
+      - WORDPRESS_DB_PASSWORD=your_password
+      - WORDPRESS_DB_NAME=wordpress
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - wordpress_network
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - nginx_data:/var/www/html
-      - letsencrypt:/etc/letsencrypt
-    links:
-      - wordpress
+  db:
+    image: mariadb:latest
     environment:
-      - NGINX_MAIL_FROM=example@example.com
-      - NGINX_MAIL_HOST=smtp.example.com
-      - NGINX_MAIL_PORT=587
-      - NGINX_MAIL_SECURE=465
-      - NGINX_MAIL_MAILER=smtp
-      - NGINX_MAIL_USERNAME=yourname
-      - NGINX_MAIL_PASSWORD=yourpassword
-      - NGINX_SSL_CERT=/etc/letsencrypt/live/example.com/fullchain.pem
-      - NGINX_SSL_KEY=/etc/letsencrypt/live/example.com/privkey.pem
-    command: ["nginx", "-g", "daemon off;"]
-    restart: always
-
-  letsencrypt:
-    image: nginx:latest
-    volumes:
-      - letsencrypt:/etc/letsencrypt
-    entrypoints:
-      - "nginx-letsencrypt"
-    command: ["nginx", "-g", "daemon off;"]
+      - MYSQL_ROOT_PASSWORD=your_password
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=your_password
     ports:
-      - "80:80"
-    restart: always
+      - "3306:3306"
+    networks:
+      - wordpress_network
 
-volumes:
-  db_data:
-  wordpress_data:
-  nginx_data:
-  letsencrypt:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=your_password
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - wordpress_network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - wordpress_network
+
+networks:
+  wordpress_network:
+    driver: bridge
 ```
 
----
+### Key Notes:
+- **`your_password`** is a placeholder; replace it with a secure password.
+- The `depends_on` clause ensures services like `db` and `redis` start before `wordpress` and `phpmyadmin`.
+- All services are connected to a shared `wordpress_network` for internal communication.
+- PHPMyAdmin is accessible at `http://localhost:8080` (assuming the host is running the Docker container).
 
-### 📝 **Steps to Apply**
+### How to Use:
+1. Save the above as `docker-compose.yml`.
+2. Run `docker-compose up -d` to start the services.
+3. Access WordPress at `http://localhost` and PHPMyAdmin at `http://localhost:8080`.
 
-1. **Create Volumes** (if not already present):
-   ```bash
-   docker volume create db_data
-   docker volume create wordpress_data
-   docker volume create nginx_data
-   docker volume create letsencrypt
-   ```
-
-2. **Run the Stack**:
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **SSL Certificate**:
-   - Run the Let's Encrypt server:
-     ```bash
-     docker-compose run --rm letsencrypt nginx-letsencrypt
-     ```
-   - Follow the prompts to enter your domain and certificate details.
-
-4. **Custom Domain Setup**:
-   - Configure your DNS provider (e.g., Cloudflare, GitHub Pages, etc.) to point your domain to your server's IP.
-   - Update the `nginx` service's `NGINX_SSL_CERT` and `NGINX_SSL_KEY` environment variables in the `nginx` service.
-
-5. **Caching**:
-   - Install a caching plugin (e.g., W3TC) in WordPress and configure Nginx to use a caching layer.
-   - Use the `nginx-cache` image for advanced caching.
-
-6. **Access WordPress**:
-   - Go to `http://localhost` (or your custom domain) to access WordPress.
-
----
-
-### 📦 **Optional: Caching Plugin (W3TC)**
-- Install W3TC plugin in WordPress:
-  ```bash
-  docker-compose run wordpress wp-cli plugin install w3tc
-  docker-compose run wordpress wp-cache-plugin install
-  ```
-
----
-
-### 🔒 **Summary**
-- **SSL**: Using Let's Encrypt with `nginx-letsencrypt`.
-- **Caching**: Nginx with `nginx-cache` and W3TC plugin.
-- **Custom Domains**: Configure DNS and update Nginx settings.
-
-Let me know if you need help with specific caching configurations or plugin installation!
+This setup provides a fully functional WordPress environment with database management and caching capabilities.
