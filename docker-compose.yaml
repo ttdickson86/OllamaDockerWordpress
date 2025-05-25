@@ -28,6 +28,7 @@ services:
     networks:
       - wordpress_network
 
+<<<<<<< HEAD
   phpmyadmin:
     image: phpmyadmin:latest
     ports:
@@ -52,3 +53,9 @@ services:
 networks:
   wordpress_network:
     driver: bridge
+=======
+volumes:
+  db_data:
+  wordpress_data:
+  nginx_data:
+>>>>>>> ad5871adc1f2ca5520b124c9a1092f74a3e49c66
