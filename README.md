@@ -1,4 +1,4 @@
-
+# OllamaDockerWordpress
 Here's a Docker Compose YAML file that sets up a WordPress site with integrated PHPMyAdmin and Redis. This configuration includes:
 
 - **WordPress** with a database and Redis caching
