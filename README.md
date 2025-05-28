@@ -71,7 +71,7 @@ networks:
 
 ### How to Use:
 1. Save the above as `docker-compose.yml`.
-2. Run `docker-compose up -d` to start the services.
+2. Run `docker compose up -d` to start the services.
 3. Access WordPress at `http://localhost:9080` and PHPMyAdmin at `http://localhost:8080`.
 
 This setup provides a fully functional WordPress environment with database management and caching capabilities.
