@@ -1,0 +1,59 @@
+
+services:
+  wordpress:
+    build:
+      context: ./wordpress
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "9080:80"
+    environment:
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=your_password
+      - WORDPRESS_DB_NAME=wordpress
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - wordpress_network
+
+  db:
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=your_password
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=your_password
+    ports:
+      - "3306:3306"
+    networks:
+      - wordpress_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - wordpress_network
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - wordpress_network
+
+networks:
+  wordpress_network:
+    driver: bridge
