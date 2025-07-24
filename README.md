@@ -1,4 +1,4 @@
-# OllamaDockerWordpress
+# Wordpress Docker Compose Set up
 
 This project provides a ready-to-use Docker Compose setup to run WordPress with MariaDB, Redis, and phpMyAdmin. It's ideal for local development, testing, or quick prototyping.
 
