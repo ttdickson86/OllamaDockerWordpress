@@ -45,7 +45,7 @@ This setup builds a custom WordPress container with the latest WordPress image a
 ## Stopping the Containers
 
 ```sh
-docker-compose down
+docker compose down
 ```
 
 ## Troubleshooting
