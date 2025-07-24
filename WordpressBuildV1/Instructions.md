@@ -34,7 +34,7 @@ This setup builds a custom WordPress container with the latest WordPress image a
 
 ## Customization
 
-- The WordPress Dockerfile is located at `wordpress/Dockerfile`.
+- The WordPress Dockerfile is located at `WordpressBuildV1/Dockerfile`.
 - To add more plugins, modify the Dockerfile and rebuild (`docker-compose build wordpress`).
 
 ## Notes
