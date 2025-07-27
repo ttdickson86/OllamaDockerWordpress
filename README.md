@@ -49,6 +49,11 @@ docker compose version
 
 ## Getting Started
 
+## Create a Project Directory 
+mkdir DockerWorpress
+cd DockerWordpress
+ls
+
 ### 2. Clone the Repository
 
 ```bash
