@@ -1,15 +1,50 @@
 pipeline {
-  agent any
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '5'))
-  }
-  stages {
-    stage('Scan') {
-      steps {
-        withSonarQubeEnv(installationName: 'sq1') { 
-          sh './mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar'
+    agent any
+
+    stages {
+        stage('Prepare') {
+            steps {
+                echo 'Preparing the environment...'
+                
+                // Ensure Docker Compose is installed
+                sh 'docker-compose --version'
+                
+                // Copy the docker-compose.yml file to the Jenkins workspace
+                sh 'cp /OllamaDockerWordpress/docker-compose.yaml .'
+            }
         }
-      }
+
+        stage('Build & Deploy') {
+            steps {
+                echo 'Building and deploying WordPress using Docker Compose...'
+
+                // Build and start services defined in docker-compose.yml
+                sh 'docker-compose up -d --build'
+
+                // Wait for the services to be up and running
+                sleep(time: 120, unit: 'SECONDS')
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo 'Verifying deployment...'
+                
+                // Use curl to check if WordPress is accessible
+                sh 'curl -I http://192.168.1.170:80'
+                
+                // Optionally, you can use more complex checks like checking the presence of a specific string in the response body
+                // sh 'curl http://localhost:80 | grep "WordPress" && echo "WordPress is up and running"'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo 'Cleaning up...'
+                
+                // Stop and remove containers, networks, volumes, and images created by Docker Compose
+                sh 'docker-compose down --rmi all -v'
+            }
+        }
     }
-  }
 }
