@@ -10,7 +10,7 @@ pipeline {
                 sh 'docker-compose --version'
                 
                 // Copy the docker-compose.yml file to the Jenkins workspace
-                sh 'cp /OllamaDockerWordpress/docker-compose.yaml .'
+                sh 'cp docker-compose.yaml .'
             }
         }
 
